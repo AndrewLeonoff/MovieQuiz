@@ -18,6 +18,8 @@ final class MovieQuizViewController: UIViewController {
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
+    private var statisticService: StatisticServiceProtocol?
+    private var alertPresenter: AlertPresenterProtocol?
     
     // MARK: - Lifecycle
     
@@ -27,6 +29,9 @@ final class MovieQuizViewController: UIViewController {
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
+        
+        statisticService = StatisticService()
+        alertPresenter = AlertPresenter()
         
         questionFactory.requestNextQuestion()
     }
@@ -96,10 +101,10 @@ final class MovieQuizViewController: UIViewController {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            let text = correctAnswers == questionsAmount ?
-            "Поздравляем, вы ответили на 10 из 10!" :
-            "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
+            guard let statisticService else { return }
+            statisticService.store(correct: correctAnswers, total: questionsAmount)
             
+            let text = setAlertMessage()
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
                 text: text,
@@ -115,26 +120,16 @@ final class MovieQuizViewController: UIViewController {
         }
     }
     
-    /*
-     private func show(quiz result: QuizResultsViewModel) {
-     let alert = UIAlertController(
-     title: result.title,
-     message: result.text,
-     preferredStyle: .alert)
-     
-     let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
-     guard let self = self else { return }
-     
-     self.currentQuestionIndex = 0
-     self.correctAnswers = 0
-     
-     self.questionFactory?.requestNextQuestion()
-     }
-     
-     alert.addAction(action)
-     self.present(alert, animated: true, completion: nil)
-     }
-     */
+    private func setAlertMessage() -> String {
+        guard let statisticService else { return "Ваш результат: \(correctAnswers)/10\n" }
+        
+        let text = "Ваш результат: \(correctAnswers)/10\n"
+        + "Количество сыгранных квизов: \(statisticService.gamesCount)\n"
+        + "Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))\n"
+        + "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        
+        return text
+    }
 }
 
 // MARK: - QuestionFactoryDelegate
@@ -158,7 +153,6 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
 
 extension MovieQuizViewController: AlertPresenterDelegate {
     func show(quiz result: QuizResultsViewModel) {
-        let alertPresenter = AlertPresenter()
         
         let alertModel = AlertModel(
             title: result.title,
@@ -170,6 +164,6 @@ extension MovieQuizViewController: AlertPresenterDelegate {
                 self.questionFactory?.requestNextQuestion()
             }
         
-        alertPresenter.showAlert(on: self, model: alertModel)
+        alertPresenter?.showAlert(on: self, model: alertModel)
     }
 }
