@@ -68,10 +68,15 @@ final class StatisticService: StatisticServiceProtocol {
     func store(correct count: Int, total amount: Int) {
         gamesCount += 1
         totalCorrectAnswers += count
-        totalAccuracy = Double(totalCorrectAnswers) / Double(10 * gamesCount) * 100
         
-        if GameResult(correct: count, total: amount, date: Date()).isBetterThan(bestGame) {
-            bestGame = GameResult(correct: count, total: amount, date: Date())
+        if gamesCount > 0 {
+            totalAccuracy = Double(totalCorrectAnswers) / Double(10 * gamesCount) * 100
+        }
+        
+        let newGame = GameResult(correct: count, total: amount, date: Date())
+        
+        if newGame.isBetterThan(bestGame) {
+            bestGame = newGame
         }
     }
 }

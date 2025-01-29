@@ -39,8 +39,7 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - IB Actions
     
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
+        setButtonsEnabled(isEnabled: false)
         
         guard let currentQuestion = currentQuestion else {
             return
@@ -52,8 +51,7 @@ final class MovieQuizViewController: UIViewController {
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
+        setButtonsEnabled(isEnabled: false)
         
         guard let currentQuestion = currentQuestion else {
             return
@@ -65,6 +63,11 @@ final class MovieQuizViewController: UIViewController {
     }
     
     // MARK: - Private Methods
+    
+    private func setButtonsEnabled(isEnabled: Bool) {
+        yesButton.isEnabled = isEnabled
+        noButton.isEnabled = isEnabled
+    }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
@@ -80,8 +83,7 @@ final class MovieQuizViewController: UIViewController {
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
         
-        yesButton.isEnabled = true
-        noButton.isEnabled = true
+        setButtonsEnabled(isEnabled: true)
     }
     
     private func showAnswerResult(isCorrect: Bool) {
@@ -157,11 +159,11 @@ extension MovieQuizViewController: AlertPresenterDelegate {
         let alertModel = AlertModel(
             title: result.title,
             message: result.text,
-            buttonText: result.buttonText) {
-                self.currentQuestionIndex = 0
-                self.correctAnswers = 0
+            buttonText: result.buttonText) { [weak self] in
+                self?.currentQuestionIndex = 0
+                self?.correctAnswers = 0
                 
-                self.questionFactory?.requestNextQuestion()
+                self?.questionFactory?.requestNextQuestion()
             }
         
         alertPresenter?.showAlert(on: self, model: alertModel)
