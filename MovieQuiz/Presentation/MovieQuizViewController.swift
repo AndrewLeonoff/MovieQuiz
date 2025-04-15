@@ -32,6 +32,7 @@ final class MovieQuizViewController: UIViewController {
         statisticService = StatisticService()
         alertPresenter = AlertPresenter()
         
+        activityIndicator.hidesWhenStopped = true
         showLoadingIndicator()
         questionFactory?.loadData()
     }
@@ -65,12 +66,15 @@ final class MovieQuizViewController: UIViewController {
     // MARK: - Private Methods
     
     private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
         activityIndicator.startAnimating()
     }
     
+    private func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+    }
+    
     private func showNetworkError(message: String) {
-        //hideLoadingIndicator()
+        hideLoadingIndicator()
         
         let viewModel = QuizResultsViewModel(
             title: "Ошибка",
@@ -167,7 +171,7 @@ extension MovieQuizViewController: QuestionFactoryDelegate {
     }
     
     func didLoadDataFromServer() {
-        activityIndicator.isHidden = true
+        hideLoadingIndicator()
         questionFactory?.requestNextQuestion()
     }
     
