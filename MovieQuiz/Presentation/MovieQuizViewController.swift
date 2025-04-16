@@ -196,6 +196,6 @@ extension MovieQuizViewController: AlertPresenterDelegate {
                 self?.questionFactory?.requestNextQuestion()
             }
         
-        alertPresenter?.showAlert(on: self, model: alertModel)
+        alertPresenter?.showAlert(on: self, model: alertModel, accessibilityIdentifier: "Game results")
     }
 }
